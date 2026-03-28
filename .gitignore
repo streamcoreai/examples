@@ -1,0 +1,65 @@
+# --- Next.js / Node (typescript/) ---
+node_modules/
+.next/
+out/
+dist/
+.turbo/
+.vercel/
+*.tsbuildinfo
+
+# --- Environment ---
+.env
+.env.local
+.env.*.local
+!.env*.example
+
+# --- Go (golang/, golang-tui/) ---
+*.exe
+*.exe~
+*.dll
+*.test
+*.out
+__debug_bin
+vendor/
+go.work
+go.work.sum
+
+# `go build` binaries (Unix, no extension) — names from module / folder
+golang/streamcoreai-example-go
+golang-tui/streamcoreai-example-golang-tui
+
+# --- Rust (rust/, rust-tui/, rust/cpal_test/) ---
+target/
+**/*.rs.bk
+# Built binaries when not using target/ (e.g. `cargo install --path .`)
+rust/cpal_test/cpal_test
+
+# --- Python (python/) ---
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.eggs/
+
+# --- Logs & coverage ---
+*.log
+coverage/
+htmlcov/
+.coverage
+coverage.xml
+*.cover
+.hypothesis/
+
+# --- IDE / OS ---
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

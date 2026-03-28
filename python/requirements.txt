@@ -1,0 +1,5 @@
+streamcoreai>=0.1.0
+gradio>=5.0.0
+fastrtc>=0.0.34
+numpy
+pyaudio

@@ -13,7 +13,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/gordonklaus/portaudio"
-	streamcoreai "github.com/streamcoreai/voice-agent-sdk-go"
+	streamcoreai "github.com/streamcoreai/go-sdk"
 )
 
 var isMuted atomic.Bool

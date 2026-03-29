@@ -6,10 +6,10 @@ require (
 	github.com/charmbracelet/bubbletea v0.25.0
 	github.com/charmbracelet/lipgloss v0.9.1
 	github.com/gordonklaus/portaudio v0.0.0-20260203164431-765aa7dfa631
-	github.com/streamcoreai/voice-agent-sdk-go v0.0.0
+	github.com/streamcoreai/go-sdk v0.0.0
 )
 
-replace github.com/streamcoreai/voice-agent-sdk-go => ../../golang-sdk
+replace github.com/streamcoreai/go-sdk => ../../golang-sdk
 
 require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect

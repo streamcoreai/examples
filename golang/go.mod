@@ -5,10 +5,10 @@ go 1.22.0
 require (
 	github.com/eiannone/keyboard v0.0.0-20220611211555-0d226195f203
 	github.com/gordonklaus/portaudio v0.0.0-20260203164431-765aa7dfa631
-	github.com/streamcoreai/voice-agent-sdk-go v0.0.0
+	github.com/streamcoreai/go-sdk v0.0.0
 )
 
-replace github.com/streamcoreai/voice-agent-sdk-go => ../../golang-sdk
+replace github.com/streamcoreai/go-sdk => ../../golang-sdk
 
 require (
 	github.com/godeps/opus v1.0.3 // indirect

@@ -11,7 +11,7 @@ import (
 
 	"github.com/eiannone/keyboard"
 	"github.com/gordonklaus/portaudio"
-	streamcoreai "github.com/streamcoreai/voice-agent-sdk-go"
+	streamcoreai "github.com/streamcoreai/go-sdk"
 )
 
 var isMuted atomic.Bool

@@ -41,8 +41,8 @@ The default WHIP endpoint is `http://localhost:8080/whip`.
 - Accesses your default OS **microphone and speaker** via PortAudio.
 - Transcodes audio on‑the‑fly using the ultra‑low latency **Opus codec**.
 - Listens seamlessly for **Server-Sent Events** via a WebRTC Data Channel to print the Agent's thought process/transcript in real time.
-- **Spacebar Push-to-Talk**: Because native CLIs lack browser Acoustic Echo Cancellation, the client boots completely muted. You seamlessly hold or toggle the Spacebar to transmit audio to the agent, reducing annoying feedback loops. agent's audio** → decodes Opus RTP → plays through your speakers.
-5. Waits for `Ctrl+C` (SIGINT), then disconnects cleanly.
+- **Spacebar Push-to-Talk**: Because native CLIs lack browser Acoustic Echo Cancellation, the client boots completely muted. You seamlessly hold or toggle the Spacebar to transmit audio to the agent, reducing annoying feedback loops.
+- Waits for `Ctrl+C` (SIGINT), then disconnects cleanly.
 
 ## Configuration
 
@@ -53,7 +53,7 @@ The default WHIP endpoint is `http://localhost:8080/whip`.
 ## Audio Pipeline
 
 ```
-Microphone (PortAudio, 48 kHz mono)
+Microphone (PortAudio, 16 kHz mono)
     → client.SendPCM(pcm)
     → SDK: Opus encode → RTP packet
     → Voice Agent server
@@ -61,5 +61,5 @@ Microphone (PortAudio, 48 kHz mono)
 Voice Agent server
     → client.RecvPCM(pcm)
     → SDK: RTP parse → Opus decode → PCM int16
-    → Speaker (PortAudio, 48 kHz mono)
+    → Speaker (PortAudio, 16 kHz mono)
 ```

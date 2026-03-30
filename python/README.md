@@ -6,7 +6,6 @@ A minimal CLI example that connects to a Voice Agent server, prints live transcr
 
 - Python 3.10+
 - (Optional but recommended) a virtual environment
-- `fastrtc`, `gradio>=5.0.0`, `streamcoreai` (via pip)
 - A running Voice Agent server (see root [README](../../README.md))
 
 ## Setup
@@ -19,18 +18,21 @@ python -m venv .venv
 source .venv/bin/activate   # macOS/Linux
 # .venv\Scripts\activate    # Windows
 
-# Install the SDK (from the local python-sdk package)
+# Install the SDK and dependencies
 pip install -e ../../python-sdk
+pip install gradio>=5.0.0 fastrtc pyaudio
 ```
 
 ## Run
+
+### 1. Gradio Web UI
 
 ```bash
 python main.py
 ```
 
 This will launch a local web server at `http://127.0.0.1:7860`.
-It provides a rich graphical interface with a conversational chatbot view, while using your terminal's PyAudio integration to manage the microphone and speakers.
+It provides a rich graphical interface with a conversational chatbot view, using browser WebRTC for microphone and speaker access with native Acoustic Echo Cancellation.
 
 ### 2. Terminal CLI
 

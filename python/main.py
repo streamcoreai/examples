@@ -19,7 +19,7 @@ sys.path.insert(
 
 import gradio as gr
 import numpy as np
-import streamcoreai
+import streamcore
 from fastrtc import WebRTC
 from fastrtc.tracks import AsyncStreamHandler
 
@@ -41,8 +41,8 @@ class AgentWebRTCRelay(AsyncStreamHandler):
         # We expect and emit 48kHz mono
         super().__init__(
             expected_layout="mono",
-            output_sample_rate=streamcoreai.SAMPLE_RATE,
-            input_sample_rate=streamcoreai.SAMPLE_RATE,
+            output_sample_rate=streamcore.SAMPLE_RATE,
+            input_sample_rate=streamcore.SAMPLE_RATE,
         )
         self.whip_client = None
         self.agent_audio_task = None
@@ -54,18 +54,18 @@ class AgentWebRTCRelay(AsyncStreamHandler):
     async def start_up(self):
         whip_url = os.environ.get("WHIP_URL", "http://localhost:8080/whip")
 
-        def on_status(status: streamcoreai.ConnectionStatus):
+        def on_status(status: streamcore.ConnectionStatus):
             GLOBAL_STATE["status"] = status.name
 
         def on_transcript(
-            entry: streamcoreai.TranscriptEntry,
-            _all: list[streamcoreai.TranscriptEntry],
+            entry: streamcore.TranscriptEntry,
+            _all: list[streamcore.TranscriptEntry],
         ):
             GLOBAL_STATE["transcript"] = _all
 
-        self.whip_client = streamcoreai.Client(
-            config=streamcoreai.Config(whip_endpoint=whip_url),
-            events=streamcoreai.EventHandler(
+        self.whip_client = streamcore.Client(
+            config=streamcore.Config(whip_endpoint=whip_url),
+            events=streamcore.EventHandler(
                 on_status_change=on_status,
                 on_transcript=on_transcript,
             ),
@@ -81,7 +81,7 @@ class AgentWebRTCRelay(AsyncStreamHandler):
                 pcm = await self.whip_client.recv_pcm()
                 # recv_pcm returns int16; reshape to (1, samples) for FastRTC
                 await self.playback_queue.put(
-                    (streamcoreai.SAMPLE_RATE, pcm.reshape(1, -1))
+                    (streamcore.SAMPLE_RATE, pcm.reshape(1, -1))
                 )
         except Exception:
             pass
@@ -90,7 +90,7 @@ class AgentWebRTCRelay(AsyncStreamHandler):
         """Called whenever the browser microphone sends audio via WebRTC."""
         if (
             self.whip_client
-            and self.whip_client.status == streamcoreai.ConnectionStatus.CONNECTED
+            and self.whip_client.status == streamcore.ConnectionStatus.CONNECTED
         ):
             sr, audio_data = frame
             if audio_data.dtype != np.int16:

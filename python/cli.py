@@ -19,7 +19,7 @@ sys.path.insert(
 import numpy as np
 import pyaudio
 
-import streamcoreai
+import streamcore
 
 logging.basicConfig(level=logging.ERROR, format="%(message)s")
 
@@ -79,12 +79,12 @@ async def main() -> None:
     last_print_len = 0
     is_muted = [True]  # List so the background thread can mutate it
 
-    def on_status(status: streamcoreai.ConnectionStatus) -> None:
+    def on_status(status: streamcore.ConnectionStatus) -> None:
         print(f"\n[status] {status.name}")
 
     def on_transcript(
-        entry: streamcoreai.TranscriptEntry,
-        _all: list[streamcoreai.TranscriptEntry],
+        entry: streamcore.TranscriptEntry,
+        _all: list[streamcore.TranscriptEntry],
     ) -> None:
         nonlocal last_print_len
         tag = "agent" if entry.role == "assistant" else "user"
@@ -103,9 +103,9 @@ async def main() -> None:
     def on_error(err: Exception) -> None:
         print(f"\n[error] {err}")
 
-    client = streamcoreai.Client(
-        config=streamcoreai.Config(whip_endpoint=whip_url),
-        events=streamcoreai.EventHandler(
+    client = streamcore.Client(
+        config=streamcore.Config(whip_endpoint=whip_url),
+        events=streamcore.EventHandler(
             on_status_change=on_status,
             on_transcript=on_transcript,
             on_error=on_error,
@@ -122,16 +122,16 @@ async def main() -> None:
     pa = pyaudio.PyAudio()
     mic_stream = pa.open(
         format=pyaudio.paInt16,
-        channels=streamcoreai.CHANNELS,
-        rate=streamcoreai.SAMPLE_RATE,
+        channels=streamcore.CHANNELS,
+        rate=streamcore.SAMPLE_RATE,
         input=True,
-        frames_per_buffer=streamcoreai.FRAME_SIZE,
+        frames_per_buffer=streamcore.FRAME_SIZE,
         start=True,
     )
     speaker_stream = pa.open(
         format=pyaudio.paInt16,
-        channels=streamcoreai.CHANNELS,
-        rate=streamcoreai.SAMPLE_RATE,
+        channels=streamcore.CHANNELS,
+        rate=streamcore.SAMPLE_RATE,
         output=True,
     )
 
@@ -145,11 +145,11 @@ async def main() -> None:
             data = await loop.run_in_executor(
                 None,
                 lambda: mic_stream.read(
-                    streamcoreai.FRAME_SIZE, exception_on_overflow=False
+                    streamcore.FRAME_SIZE, exception_on_overflow=False
                 ),
             )
             if is_muted[0]:
-                pcm = np.zeros(streamcoreai.FRAME_SIZE, dtype=np.int16)
+                pcm = np.zeros(streamcore.FRAME_SIZE, dtype=np.int16)
             else:
                 pcm = np.frombuffer(data, dtype=np.int16)
             await client.send_pcm(pcm)

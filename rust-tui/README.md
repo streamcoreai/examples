@@ -10,10 +10,15 @@ This project implements a standalone Terminal User Interface using **`ratatui`**
 - **Async Architecture**: Powered by `tokio` for non-blocking UI and audio processing.
 
 ## Prerequisites
-Ensure you have `libopus` and `portaudio` (or equivalent) installed on your system.
+Ensure you have `libopus` installed on your system.
 On macOS:
 ```bash
-brew install opus portaudio
+brew install opus
+```
+
+On Linux (Debian/Ubuntu):
+```bash
+sudo apt install libopus-dev
 ```
 
 ## Running

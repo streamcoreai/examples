@@ -1,0 +1,13 @@
+[package]
+name = "streamcoreai-example-rust"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+streamcore-rust-sdk = { workspace = true }
+tokio = { version = "1", features = ["full"] }
+anyhow = "1"
+crossterm = "0.27"
+
+# Audio capture / playback (pure Rust, cross-platform)
+cpal = "0.15"

@@ -1,0 +1,5 @@
+-e ../../python-sdk
+gradio>=5.0.0
+fastrtc>=0.0.34
+numpy
+pyaudio

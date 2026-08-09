@@ -1,5 +1,7 @@
 # Python Voice Agent Example
 
+**English** | [简体中文](./README.zh-CN.md)
+
 A minimal CLI example that connects to a Voice Agent server, prints live transcript events, and reads remote audio using the Python SDK with [aiortc](https://github.com/aiortc/aiortc).
 
 ### Prerequisites

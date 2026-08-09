@@ -1,0 +1,47 @@
+[package]
+name = "esp32-desktop-car"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.77"
+description = "voiceagent firmware for an ESP32-S3 desktop-car robot (N20 wheel motors via TC1508 H-bridge + SSD1306 OLED + INMP441 mic + MAX98357A speaker)"
+license = "MIT"
+default-run = "desktop_car"
+
+[[bin]]
+name = "desktop_car"
+path = "src/main.rs"
+
+[dependencies]
+voiceagent-esp32 = { path = "../../esp32" }
+
+esp-idf-svc = { version = "0.52", features = ["binstart", "critical-section"] }
+esp-idf-hal = "0.46"
+esp-idf-sys = { version = "0.37", features = ["binstart"] }
+
+anyhow      = "1"
+log         = "0.4"
+heapless    = "0.9"
+spin        = { version = "0.9", default-features = false, features = ["mutex", "spin_mutex"] }
+serde_json  = { version = "1", default-features = false, features = ["alloc"] }
+
+# Embedded-graphics + SSD1306 OLED driver (I2C). 0.10 targets embedded-hal 1.0.
+ssd1306             = "0.10"
+embedded-graphics   = "0.8"
+embedded-hal        = "1.0"
+
+[build-dependencies]
+embuild = "0.33"
+
+[profile.release]
+opt-level = "s"
+lto = true
+
+[profile.dev]
+debug = true
+opt-level = "z"
+
+[package.metadata.docs.rs]
+default-target = "xtensa-esp32s3-espidf"
+
+[package.metadata.cargo-machete]
+ignored = ["esp-idf-sys"]

@@ -1,5 +1,7 @@
 # Rust Voice Agent Example
 
+**English** | [简体中文](./README.zh-CN.md)
+
 A minimal CLI example that connects to a Voice Agent server using the [Rust SDK](../../rust-sdk/).
 
 ## Prerequisites

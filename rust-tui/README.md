@@ -1,4 +1,7 @@
 # StreamCoreAI Native Rust Ratatui TUI
+
+**English** | [简体中文](./README.zh-CN.md)
+
 > A premium, high-performance terminal dashboard for the StreamCoreAI Voice Agent.
 
 This project implements a standalone Terminal User Interface using **`ratatui`** and **`crossterm`**. It provides real-time visual feedback, including connection status, transcript history, and a dynamic audio equalizer pulse.

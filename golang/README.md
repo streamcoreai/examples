@@ -1,5 +1,7 @@
 # Go Voice Agent Example
 
+**English** | [简体中文](./README.zh-CN.md)
+
 A CLI example that connects to a Voice Agent server using the [Go SDK](../../golang-sdk/)
 with **real microphone capture and speaker playback**.
 

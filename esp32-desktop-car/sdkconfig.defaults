@@ -1,0 +1,65 @@
+# Target: ESP32-S3 desktop-car
+CONFIG_IDF_TARGET="esp32s3"
+
+# ----- WiFi -----
+CONFIG_ESP_WIFI_STATIC_RX_BUFFER_NUM=10
+CONFIG_ESP_WIFI_DYNAMIC_RX_BUFFER_NUM=32
+CONFIG_ESP_WIFI_DYNAMIC_TX_BUFFER_NUM=32
+# Move WiFi / LWIP buffers out of internal DRAM into PSRAM. Without this,
+# AFE + WebRTC can't both fit in the ~300 KiB of internal DRAM on S3.
+CONFIG_SPIRAM_TRY_ALLOCATE_WIFI_LWIP=y
+
+# ----- PSRAM-aggressive heap policy -----
+# Anything bigger than this goes to PSRAM by default. Smaller = more PSRAM
+# usage (good — we want to keep internal DRAM free for stacks + TCBs).
+CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=512
+# Keep this much internal DRAM reserved for things that *must* be there
+# (ISRs, DMA buffers, task stacks). Default is 32 KiB — bumping it forces
+# the allocator to be greedy about handing out PSRAM.
+CONFIG_SPIRAM_MALLOC_RESERVE_INTERNAL=16384
+# Push FreeRTOS / heap code out of IRAM to free up internal SRAM for data.
+CONFIG_FREERTOS_PLACE_FUNCTIONS_INTO_FLASH=y
+CONFIG_HEAP_PLACE_FUNCTION_INTO_FLASH=y
+
+# ----- Flash + Partitions -----
+CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y
+
+# ----- PSRAM (ESP32-S3 with octal PSRAM) -----
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_MODE_OCT=y
+CONFIG_SPIRAM_SPEED_80M=y
+CONFIG_ESP32S3_DEFAULT_CPU_FREQ_240=y
+
+# ----- Memory -----
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=65536
+CONFIG_FREERTOS_TIMER_TASK_STACK_DEPTH=4096
+
+# ----- mbedTLS for DTLS / SRTP (required by esp_peer) -----
+CONFIG_MBEDTLS_SSL_PROTO_DTLS=y
+CONFIG_MBEDTLS_SSL_DTLS_SRTP=y
+CONFIG_MBEDTLS_X509_CREATE_C=y
+CONFIG_MBEDTLS_DYNAMIC_BUFFER=y
+CONFIG_MBEDTLS_SSL_MAX_CONTENT_LEN=16384
+CONFIG_MBEDTLS_DEFAULT_MEM_ALLOC=y
+
+# ----- HTTP client (for WHIP signaling) -----
+CONFIG_ESP_HTTP_CLIENT_ENABLE_HTTPS=y
+
+# ----- Logging -----
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y
+CONFIG_LOG_MAXIMUM_LEVEL_DEBUG=y
+
+# ----- Watchdog -----
+CONFIG_ESP_TASK_WDT_TIMEOUT_S=30
+
+# ----- ESP-SR Audio Front End (AFE) — WebRTC NS + AGC only -----
+CONFIG_AFE_INTERFACE_V1=y
+CONFIG_SR_NSN_WEBRTC=y
+CONFIG_SR_VADN_WEBRTC=y
+CONFIG_SR_MN_CN_NONE=y
+CONFIG_SR_MN_EN_NONE=y
+# WakeNet is wired through the SDK (see I2sMicCapturer::new_with_wakenet)
+# but turned off here. Enabling it cleanly requires adding the right
+# combination of CONFIG_USE_WAKENET, CONFIG_SR_WN9_*, the `model`
+# partition, and CONFIG_MODEL_IN_SPIFFS (or _IN_FLASH). Re-tackle when
+# ready — see esp32/components/voiceagent_vc_frontend/voiceagent_afe.c.

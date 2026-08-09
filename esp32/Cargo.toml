@@ -1,0 +1,58 @@
+[package]
+name = "voiceagent-esp32-examples"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.77"
+description = "Reference firmware examples for the voiceagent-esp32 SDK"
+license = "MIT"
+default-run = "voice_agent"
+
+# Each example is its own [[bin]]. Build a specific one with:
+#   cargo build --release --bin voice_agent
+#   cargo build --release --bin minimal_audio
+#   cargo build --release --bin headless
+#
+# `cargo run` defaults to the `voice_agent` binary (the comprehensive one).
+
+[[bin]]
+name = "voice_agent"
+path = "src/bin/voice_agent.rs"
+
+[[bin]]
+name = "minimal_audio"
+path = "src/bin/minimal_audio.rs"
+
+[[bin]]
+name = "headless"
+path = "src/bin/headless.rs"
+
+[dependencies]
+voiceagent-esp32 = { path = "../../esp32" }
+
+esp-idf-svc = { version = "0.52", features = ["binstart", "critical-section"] }
+esp-idf-hal = "0.46"
+esp-idf-sys = { version = "0.37", features = ["binstart"] }
+anyhow = "1"
+log = "0.4"
+serde_json = { version = "1", default-features = false, features = ["alloc"] }
+
+[build-dependencies]
+embuild = "0.33"
+
+[profile.release]
+opt-level = "s"
+lto = true
+
+[profile.dev]
+debug = true
+opt-level = "z"
+
+[package.metadata.docs.rs]
+default-target = "xtensa-esp32s3-espidf"
+
+[package.metadata.cargo-machete]
+ignored = ["esp-idf-sys"]
+
+# Make `cargo run` default to the comprehensive example.
+[package.metadata.bin-default]
+default = "voice_agent"

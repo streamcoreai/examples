@@ -1,4 +1,7 @@
 # StreamCoreAI Native Go TUI
+
+**English** | [简体中文](./README.zh-CN.md)
+
 > A beautiful 60FPS Terminal User Interface built horizontally on top of the StreamCoreAI Voice Agent Go SDK.
 
 This example completely bypasses the browser, running a zero-latency audio capture and Opus transcoder directly on your machine. Through the magic of `charmbracelet/bubbletea` and `lipgloss`, all signaling states, microphone mute configurations (via Spacebar), and live AI transcripts are rendered directly inside a stunning frame-buffered terminal layout.

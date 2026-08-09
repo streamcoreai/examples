@@ -1,0 +1,22 @@
+[build]
+target = "xtensa-esp32s3-espidf"
+
+[target.xtensa-esp32s3-espidf]
+linker = "ldproxy"
+# Uncomment to enable `cargo run` to flash + monitor automatically:
+# runner = "espflash flash --monitor"
+
+rustflags = ["--cfg", "espidf_time64"]
+
+[unstable]
+build-std = ["std", "panic_abort"]
+
+[env]
+# ESP-IDF version to use (resolved by esp-idf-sys).
+ESP_IDF_VERSION = "v5.4"
+
+# Enable the IDF Component Manager (pulls esp_audio_codec, esp-sr, esp32-camera).
+ESP_IDF_COMPONENT_MANAGER_ENABLED = "1"
+
+# MCU — change to "esp32" for plain ESP32 boards.
+MCU = "esp32s3"

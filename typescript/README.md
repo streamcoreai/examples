@@ -1,5 +1,7 @@
 # TypeScript Voice Agent Example
 
+**English** | [简体中文](./README.zh-CN.md)
+
 A Next.js web app that connects to a Voice Agent server using the [TypeScript SDK](../../typescript-sdk/). Provides a browser-based UI with a mic button, real-time audio visualization, and live transcripts.
 
 ## Prerequisites

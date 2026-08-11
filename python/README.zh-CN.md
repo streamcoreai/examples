@@ -21,8 +21,7 @@ source .venv/bin/activate   # macOS/Linux
 # .venv\Scripts\activate    # Windows
 
 # Install the SDK and dependencies
-pip install -e ../../python-sdk
-pip install gradio>=5.0.0 fastrtc pyaudio
+pip install -r requirements.txt
 ```
 
 ## 运行

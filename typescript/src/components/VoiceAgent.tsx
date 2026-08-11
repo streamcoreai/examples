@@ -16,6 +16,9 @@ function StatusBadge({ status }: { status: ConnectionStatus }) {
     idle: { color: "bg-zinc-600", label: "Ready" },
     connecting: { color: "bg-yellow-500 animate-pulse", label: "Connecting..." },
     connected: { color: "bg-green-500", label: "Connected" },
+    // Recoverable: the session and the conversation are still alive on the
+    // server while the SDK retries an ICE restart.
+    reconnecting: { color: "bg-yellow-500 animate-pulse", label: "Reconnecting..." },
     error: { color: "bg-red-500", label: "Error" },
     disconnected: { color: "bg-zinc-600", label: "Disconnected" },
   };

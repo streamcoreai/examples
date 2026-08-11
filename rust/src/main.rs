@@ -50,6 +50,7 @@ async fn main() -> anyhow::Result<()> {
             on_timing: None,
             on_agent_state_change: None,
             on_data_channel_message: None,
+            ..Default::default()
         },
     ));
 

@@ -8,7 +8,12 @@ Do not write StreamCore code from memory — you will invent an API that does no
 
 These are the samples people copy first. For most users an example **is** the documentation, and a broken one reads as a broken project. Treat correctness here as higher-stakes than in library code.
 
-Current samples: Next.js web client, Python, Go, Rust, and terminal-UI clients for Go and Rust.
+Current samples fall into two groups:
+
+- **Clients** — things that talk *to* a StreamCore server: Next.js web, Python, Go, Rust, and terminal-UI clients for Go and Rust.
+- **Agents** — things a StreamCore server talks *to*. Today that is `bring-your-own-agent/`, which implements the `llm.provider = "agent"` HTTP contract in Node and Python.
+
+The two groups have opposite dependencies: a client uses a StreamCore SDK, an agent uses none at all — it only has to speak plain HTTP. Do not reach for an SDK in an agent sample.
 
 ## House rules for every example
 
@@ -17,6 +22,13 @@ Current samples: Next.js web client, Python, Go, Rust, and terminal-UI clients f
 - **Never hardcode an API key**, and never put a provider key in client-side code. Provider credentials belong in the server's `config.toml`.
 - **Keep them minimal.** An example that also demonstrates state management, styling, and error boundaries teaches none of them well. One idea per sample.
 - **They must actually run.** CI builds these; a sample that compiles but cannot connect is still broken.
+
+## House rules for agent samples
+
+- **Zero dependencies.** An agent sample is a bare HTTP endpoint. `node agent.mjs` and `python3 agent.py` must work on a clean machine with no install step — a sample that needs `npm install` to demonstrate a JSON contract is teaching the wrong thing.
+- **Stream by default.** Show `text/event-stream`, and mention the buffered form as the fallback. A buffered sample teaches a pattern that makes real calls feel broken.
+- **Handle cancellation.** Barge-in cancels the request mid-reply. A sample that ignores it teaches people to burn tokens on speech nobody hears.
+- **Keep `session_id` and `resource_id` distinct.** One is the conversation, the other is the person. Collapsing them is the single most likely mistake a reader will make.
 
 ## Exact API per language
 

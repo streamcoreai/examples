@@ -1,12 +1,9 @@
-"""A complete bring-your-own-agent endpoint for StreamCore, using only the
-standard library.
+"""A bring-your-own-agent endpoint for StreamCore, standard library only.
 
-    python3 agent.py                      # listens on :9000
+    python3 agent.py
     AGENT_API_KEY=secret python3 agent.py
 
-StreamCore does speech in and speech out. This process owns the intelligence:
-what to say, what to remember, and who to remember it for.
-
+StreamCore does speech in and speech out. This process decides what to say.
 The Node version in this folder is the same contract, line for line.
 """
 
@@ -21,15 +18,10 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 PORT = int(os.environ.get("PORT", "9000"))
 API_KEY = os.environ.get("AGENT_API_KEY", "")
 
-# Two stores, because StreamCore tells us two different things about a caller.
-#
-# session_id is one conversation. It rotates when the conversation resets, so
-# anything keyed here is forgotten at the end of the call — the right home for
-# "what were we just talking about".
-#
-# resource_id is the person, stable across separate calls. It only arrives when
-# the deployment asserts an identity (a signed token claim, or a phone number
-# from sip-server), so it is the right home for "what do I know about you".
+# Two stores, because the server tells us two different things about a caller.
+# session_id is one conversation and rotates when it resets, so anything kept
+# under it dies with the call. resource_id is the person, stable across calls,
+# and only shows up when the deployment identifies people at all.
 conversations: dict[str, dict] = {}  # session_id  -> {"turns": [...]}
 people: dict[str, dict] = {}  # resource_id -> {"name": str, "calls": int}
 
@@ -38,7 +30,7 @@ class AgentHandler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
 
     def do_POST(self) -> None:  # noqa: N802 (name fixed by BaseHTTPRequestHandler)
-        # StreamCore sends [agent] api_key as a bearer token when configured.
+        # Sent when [agent] api_key is configured.
         if API_KEY and self.headers.get("Authorization") != f"Bearer {API_KEY}":
             self._text(401, "unauthorized")
             return
@@ -47,8 +39,7 @@ class AgentHandler(BaseHTTPRequestHandler):
         try:
             body = json.loads(self.rfile.read(length) or b"{}")
         except json.JSONDecodeError:
-            # A non-2xx fails the turn and the caller hears nothing, which is
-            # the right outcome for a request we cannot understand.
+            # Any non-2xx fails the turn and the caller hears nothing.
             self._text(400, "expected a JSON body")
             return
 
@@ -57,22 +48,17 @@ class AgentHandler(BaseHTTPRequestHandler):
         text = body.get("text", "")
         system = body.get("system", "")
 
-        # "oneshot" is a stateless background transform — the rolling summary,
-        # today. It must not touch conversation memory: it is StreamCore asking
-        # us to process text on its behalf, not the caller saying something. The
-        # result is used internally and never spoken, so buffered JSON is fine.
+        # A oneshot is the server asking us to process some text on its behalf
+        # (the rolling summary, today), not the caller saying something. Keep it
+        # out of conversation memory. The result is never spoken.
         if body.get("type") == "oneshot":
             self._json(200, {"text": summarise(system, text)})
             return
 
         reply = respond(session_id, resource_id, text, system)
 
-        # text/event-stream lets StreamCore speak each sentence while the rest
-        # is still being generated, which is the difference between a natural
-        # reply and a long silence. Swap in the buffered form only if your agent
-        # cannot stream:
-        #
-        #     self._json(200, {"text": reply})
+        # Streaming lets the server speak sentence one while sentence two is
+        # still being written. The buffered alternative is self._json(200, ...).
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream")
         self.send_header("Cache-Control", "no-cache")
@@ -80,12 +66,11 @@ class AgentHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
         for chunk in re.findall(r"\S+\s?", reply):
-            # Barge-in: when the caller interrupts, StreamCore cancels the
-            # request and the socket breaks. Stop generating — the words would
-            # be thrown away, and with a real model you are still paying.
+            # A dead socket is barge-in: the caller interrupted and the server
+            # cancelled, so anything generated from here is thrown away.
             if not self._write_chunk(f"data: {json.dumps({'delta': chunk})}\n\n"):
                 return
-            time.sleep(0.04)  # real generation is not instant
+            time.sleep(0.04)  # stand-in for generation time
         if self._write_chunk("data: [DONE]\n\n"):
             self._write_chunk("")  # terminating zero-length chunk
 
@@ -122,19 +107,17 @@ class AgentHandler(BaseHTTPRequestHandler):
 
 
 def respond(session_id: str, resource_id: str | None, text: str, system: str) -> str:
-    """Decide what to say. Replace this with your model, framework, or backend."""
+    """Decide what to say. Swap in your model, framework, or backend."""
     conversation = conversations.setdefault(session_id, {"turns": []})
     conversation["turns"].append(text)
 
-    # Anonymous is a normal state: resource_id is absent when the deployment
-    # asserts no identity. Guard rather than keying memory on None, which would
-    # pool every anonymous caller into one shared person.
+    # No resource_id means nobody was identified. Guard rather than keying on
+    # None, which would file every anonymous caller under one person.
     person = people.setdefault(resource_id, {"calls": 0}) if resource_id else None
     if person and len(conversation["turns"]) == 1:
         person["calls"] += 1
 
-    # `system` carries skill text the server appends. Prepend it to your prompt;
-    # here we just acknowledge that it exists.
+    # Skill text the server appends. Prepend it to your prompt.
     if system:
         print(f"[agent] system prompt: {system[:60]}…")
 
@@ -143,8 +126,7 @@ def respond(session_id: str, resource_id: str | None, text: str, system: str) ->
         person["name"] = remembered.group(1)
         return f"Nice to meet you, {person['name']}. I'll remember that for next time."
 
-    # The payoff of resource_id: this is a *different call*, with a different
-    # session_id, and the agent still knows who it is talking to.
+    # New session_id, same resource_id, and we still know who this is.
     if person and person.get("name") and len(conversation["turns"]) == 1:
         return (
             f"Welcome back, {person['name']}. This is call number "

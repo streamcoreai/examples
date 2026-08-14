@@ -47,6 +47,11 @@ class AgentHandler(BaseHTTPRequestHandler):
         resource_id = body.get("resource_id")  # absent when nobody is identified
         text = body.get("text", "")
         system = body.get("system", "")
+        extras = {
+            "interrupted_text": body.get("interrupted_text", ""),
+            "context": body.get("context") or [],
+            "summary": body.get("summary", ""),
+        }
 
         # A oneshot is the server asking us to process some text on its behalf
         # (the rolling summary, today), not the caller saying something. Keep it
@@ -55,7 +60,7 @@ class AgentHandler(BaseHTTPRequestHandler):
             self._json(200, {"text": summarise(system, text)})
             return
 
-        reply = respond(session_id, resource_id, text, system)
+        reply = respond(session_id, resource_id, text, system, extras)
 
         # Streaming lets the server speak sentence one while sentence two is
         # still being written. The buffered alternative is self._json(200, ...).
@@ -106,10 +111,29 @@ class AgentHandler(BaseHTTPRequestHandler):
         self.wfile.write(raw)
 
 
-def respond(session_id: str, resource_id: str | None, text: str, system: str) -> str:
+def respond(
+    session_id: str, resource_id: str | None, text: str, system: str, extras: dict
+) -> str:
     """Decide what to say. Swap in your model, framework, or backend."""
     conversation = conversations.setdefault(session_id, {"turns": []})
+
+    # text is only ever the caller's words, so it is safe to store as-is. The
+    # server keeps its context in sibling fields for exactly this reason.
     conversation["turns"].append(text)
+
+    # What the caller actually heard before cutting in. Their last reply was
+    # truncated, so anything you stored for it is longer than what was spoken.
+    if extras["interrupted_text"]:
+        print(f"[agent] interrupted after: {extras['interrupted_text']}")
+
+    # Retrieved chunks, when the server's RAG is on. Fold them into your prompt,
+    # or ignore them if your agent does its own retrieval.
+    if extras["context"]:
+        print(f"[agent] {len(extras['context'])} context chunk(s)")
+
+    # The server's digest of earlier turns. Redundant once your agent has memory.
+    if extras["summary"]:
+        print(f"[agent] summary: {extras['summary'][:60]}…")
 
     # No resource_id means nobody was identified. Guard rather than keying on
     # None, which would file every anonymous caller under one person.

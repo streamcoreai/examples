@@ -76,9 +76,14 @@ data: {"delta":"Welcome "} data: {"delta":"back, "} data: {"delta":"Jason. "} ..
   "resource_id": "user_8891",
   "type": "chat",
   "text": "what the caller said",
-  "system": "skill text appended by the server, if any"
+  "system": "skill text appended by the server, if any",
+  "interrupted_text": "what the agent was saying when cut off",
+  "context": ["retrieved chunk", "…"],
+  "summary": "rolling digest of earlier turns"
 }
 ```
+
+`text` is always exactly what the caller said — the server never folds context into it, so you can store it directly. Everything from `interrupted_text` down is optional context that arrives beside the speech rather than inside it. Both files log each one so you can see when it shows up.
 
 **`session_id` is the conversation. `resource_id` is the person.** That distinction is the thing this example exists to teach, and it is why it keeps two separate stores:
 

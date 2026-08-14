@@ -76,9 +76,14 @@ data: {"delta":"Welcome "} data: {"delta":"back, "} data: {"delta":"Jason. "} ..
   "resource_id": "user_8891",
   "type": "chat",
   "text": "用户这一轮说的话",
-  "system": "服务端追加的技能文本（如有）"
+  "system": "服务端追加的技能文本（如有）",
+  "interrupted_text": "被打断时 agent 正在说的内容",
+  "context": ["检索到的片段", "…"],
+  "summary": "更早若干轮的滚动摘要"
 }
 ```
+
+`text` 永远只是用户实际说出的话——服务端不会把上下文塞进去，因此你可以直接存下它。从 `interrupted_text` 往下都是可选上下文，与语音并列传来而非嵌在其中。两份实现都会把它们打印出来，方便你观察何时出现。
 
 **`session_id` 是这段对话，`resource_id` 是这个人。** 这一区分正是本示例要教的东西，也是它维护两个独立存储的原因：
 

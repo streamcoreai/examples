@@ -40,7 +40,16 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  const { session_id: sessionID, resource_id: resourceID, type, text, system } = body;
+  const {
+    session_id: sessionID,
+    resource_id: resourceID,
+    type,
+    text,
+    system,
+    interrupted_text: interruptedText,
+    context,
+    summary,
+  } = body;
 
   // A oneshot is the server asking us to process some text on its behalf (the
   // rolling summary, today), not the caller saying something. Keep it out of
@@ -51,7 +60,7 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  const reply = respond({ sessionID, resourceID, text, system });
+  const reply = respond({ sessionID, resourceID, text, system, interruptedText, context, summary });
 
   // Streaming lets the server speak sentence one while sentence two is still
   // being written. The buffered alternative:
@@ -82,9 +91,25 @@ const server = createServer(async (req, res) => {
 });
 
 /** Decide what to say. Swap in your model, framework, or backend. */
-function respond({ sessionID, resourceID, text, system }) {
+function respond({ sessionID, resourceID, text, system, interruptedText, context, summary }) {
   const conversation = getOr(conversations, sessionID, () => ({ turns: [] }));
+
+  // text is only ever the caller's words, so it is safe to store as-is. The
+  // server keeps its context in sibling fields for exactly this reason.
   conversation.turns.push(text);
+
+  // What the caller actually heard before cutting in. Their last reply was
+  // truncated, so anything you stored for it is longer than what was spoken.
+  if (interruptedText) {
+    console.log(`[agent] interrupted after: ${interruptedText}`);
+  }
+
+  // Retrieved chunks, when the server's RAG is on. Fold them into your prompt,
+  // or ignore them if your agent does its own retrieval.
+  if (context?.length) console.log(`[agent] ${context.length} context chunk(s)`);
+
+  // The server's digest of earlier turns. Redundant once your agent has memory.
+  if (summary) console.log(`[agent] summary: ${summary.slice(0, 60)}…`);
 
   // No resource_id means nobody was identified. Guard rather than keying on
   // undefined, which would file every anonymous caller under one person.

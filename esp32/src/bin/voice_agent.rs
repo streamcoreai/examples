@@ -139,9 +139,24 @@ fn main() -> anyhow::Result<()> {
 
     // ------------------------------------------------------------------ 5.
     // Connect — returns immediately; status comes via on_state_changed.
+    //
+    // TOKEN_URL mints a JWT; `connect` wants the JWT itself, so exchange it
+    // here (API_KEY goes out as the bearer). Leave TOKEN_URL empty for a
+    // server that doesn't authenticate.
+    let token = match opt(env_or!("TOKEN_URL", "")) {
+        Some(url) => match va::whip::fetch_token(url, opt(env_or!("API_KEY", ""))) {
+            Ok(t) => Some(t),
+            Err(e) => {
+                warn!("token fetch from {url} failed, connecting unauthenticated: {e}");
+                None
+            }
+        },
+        None => None,
+    };
+
     agent.connect(
         env_or!("WHIP_ENDPOINT", "http://192.168.1.100:8080/whip"),
-        opt(env_or!("TOKEN_URL", "")),
+        token.as_deref(),
     )?;
 
     // ------------------------------------------------------------------ 6.

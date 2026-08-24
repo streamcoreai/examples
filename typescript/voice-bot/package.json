@@ -1,0 +1,37 @@
+{
+  "name": "@streamcore/example-voice-bot",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --experimental-https",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "prepare:model": "node scripts/prepare-model.mjs",
+    "predev": "node scripts/check-model.mjs",
+    "prebuild": "node scripts/check-model.mjs"
+  },
+  "dependencies": {
+    "@babylonjs/core": "9.22.1",
+    "@babylonjs/loaders": "9.22.1",
+    "@streamcore/js-sdk": "0.1.8",
+    "next": "16.3.2",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@gltf-transform/core": "^4.4.2",
+    "@gltf-transform/extensions": "^4.4.2",
+    "@gltf-transform/functions": "^4.4.2",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.2",
+    "meshoptimizer": "^1.2.0",
+    "sharp": "^0.35.3",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

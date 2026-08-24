@@ -12,9 +12,9 @@
 - TC1508 双 H 桥驱动两个 N20 轮毂电机
 - BOOT 按键（按住说话）和一个电容触摸片（静音切换）
 
-传动系统以一组原生 Go 工具的形式暴露给 LLM，位于 `server/internal/tools/car.go`。当 LLM
+传动系统以一组原生 Go 工具的形式暴露给 LLM，位于 `server/internal/tools/movement.go`。当 LLM
 调用其中之一时，服务端流水线会发出一个按 topic 寻址的 data-channel 包
-（`{"type":"data","topic":"car.command","payload":"<base64 JSON>"}`），固件的 `on_data`
+（`{"type":"data","topic":"movement.command","payload":"<base64 JSON>"}`），固件的 `on_data`
 回调解码它，然后由电机工作线程执行动作。整个过程不涉及子进程插件。
 
 ## 引脚表
@@ -88,20 +88,28 @@ espflash flash --monitor target/xtensa-esp32s3-espidf/release/desktop_car
 
 | 名称                       | 作用                              |
 | -------------------------- | ----------------------------------------- |
-| `car.forward`              | 双轮前进                       |
-| `car.backward`             | 双轮后退                      |
-| `car.turn_left`            | 原地逆时针旋转          |
-| `car.turn_right`           | 原地顺时针旋转                  |
-| `car.pivot_forward_left`   | 仅右轮前进                 |
-| `car.pivot_forward_right`  | 仅左轮前进                 |
-| `car.pivot_back_left`      | 仅右轮后退                |
-| `car.pivot_back_right`     | 仅左轮后退                 |
-| `car.stop`                 | 立即切断双电机               |
-| `car.dance`                | 编排好的扭动动作                      |
-| `car.shake`                | 快速左右摇摆                     |
+| `movement.forward`             | 双轮前进         |
+| `movement.backward`            | 双轮后退         |
+| `movement.turn_left`           | 原地逆时针旋转   |
+| `movement.turn_right`          | 原地顺时针旋转   |
+| `movement.pivot_forward_left`  | 仅右轮前进       |
+| `movement.pivot_forward_right` | 仅左轮前进       |
+| `movement.pivot_back_left`     | 仅右轮后退       |
+| `movement.pivot_back_right`    | 仅左轮后退       |
+| `movement.stop`                | 立即切断双电机   |
+| `movement.fancy`               | 编排好的扭动动作 |
+| `movement.shake`               | 快速左右摇摆     |
 
-流水线在 `server/internal/pipeline/pipeline.go`（`handleCarToolCall`）中拦截每一次
-`car.*` 调用，并向设备写出单个 data-channel 包 —— 与 `vision.analyze` 是同一套模式。
+流水线在 `server/internal/pipeline/pipeline.go`（`handleMovementToolCall`）中拦截每一次
+`movement.*` 调用，并向设备写出单个 data-channel 包 —— 与 `vision.analyze` 是同一套模式。
+
+这些工具是按动作命名的，不是按设备命名的。同一组工具也在
+[`examples/voice-bot`](../voice-bot) 里驱动那个绑好骨架的角色，而服务端根本不知道连上来的
+是哪一种客户端——所以叫 `car.forward` 会让那个角色把自己叙述成一台车。任何能前进和转向的
+东西都可以订阅 `movement.command`；这份固件恰好是用电机来响应的。
+
+有一个字段这份固件是故意忽略的：`continuous: true` 表示"一直走到叫停为止"。这适合一个会
+停在墙前的角色，不适合一台放在桌子上的车，所以它会退回成一次普通的定时移动。
 
 ### 设备端
 
@@ -111,7 +119,7 @@ espflash flash --monitor target/xtensa-esp32s3-espidf/release/desktop_car
 | ----------------- | ---------------------------------------- |
 | `get_device_info` | `model`、`wheels`、`sdk` 版本         |
 
-电机动作不通过 `rpc_register` 暴露 —— 它们由 SDK 监听 `car.command` topic 的 `on_data`
+电机动作不通过 `rpc_register` 暴露 —— 它们由 SDK 监听 `movement.command` topic 的 `on_data`
 回调驱动。
 
 ## 项目结构

@@ -10,7 +10,7 @@ These are the samples people copy first. For most users an example **is** the do
 
 Current samples fall into two groups:
 
-- **Clients** — things that talk *to* a StreamCore server: Next.js web, Python, Go, Rust, and terminal-UI clients for Go and Rust.
+- **Clients** — things that talk *to* a StreamCore server: Next.js web, Python, Go, Rust, and terminal-UI clients for Go and Rust. `voice-bot/` is the same session rendered as a 3D character rather than a waveform, and is the one deliberate exception to the "keep them minimal" rule below.
 - **Agents** — things a StreamCore server talks *to*. Today that is `bring-your-own-agent/`, which implements the `llm.provider = "agent"` HTTP contract in Node and Python.
 
 The two groups have opposite dependencies: a client uses a StreamCore SDK, an agent uses none at all — it only has to speak plain HTTP. Do not reach for an SDK in an agent sample.

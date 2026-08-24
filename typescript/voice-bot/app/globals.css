@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+@theme {
+  --color-void: #04070b;
+  --color-ink: #0a1018;
+  --color-glow: #59eaff;
+  --color-glow-dim: #2a8ea3;
+  --color-violet: #c09eff;
+  --color-alert: #ff7a5c;
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html,
+body {
+  height: 100%;
+  background: var(--color-void);
+  color: #e6f2f7;
+  overscroll-behavior: none;
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  /* One frosted surface, used by every floating panel so they read as a set. */
+  .glass {
+    background: color-mix(in srgb, #0b141d 86%, transparent);
+    backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid color-mix(in srgb, var(--color-glow) 14%, transparent);
+    box-shadow:
+      0 1px 0 0 color-mix(in srgb, #ffffff 6%, transparent) inset,
+      0 24px 60px -28px #000;
+  }
+
+  .hairline {
+    border-color: color-mix(in srgb, var(--color-glow) 12%, transparent);
+  }
+}
+
+/* The canvas owns the pointer; panels claim it back individually. */
+.stage-canvas {
+  touch-action: none;
+  outline: none;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise {
+  animation: rise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  70% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.pulse-ring::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 9999px;
+  border: 1px solid var(--color-glow);
+  animation: pulse-ring 2.4s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise,
+  .pulse-ring::after {
+    animation: none;
+  }
+}

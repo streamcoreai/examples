@@ -18,7 +18,10 @@
 //!   4. SDK runs the WebRTC transport on its own thread; the agent
 //!      surfaces a stateful handle plus a set of callbacks.
 //!   5. The robot's drivetrain is exposed to the AI as a small set of
-//!      RPC tools (`car.forward`, `car.turn_left`, `car.fancy`, …).
+//!      server-side tools (`movement.forward`, `movement.turn_left`,
+//!      `movement.fancy`, …). They are named for the action, not the
+//!      device — the same tools walk the browser bot in examples/voice-bot,
+//!      and the server never learns which client is on the other end.
 
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
@@ -213,18 +216,18 @@ fn main() -> anyhow::Result<()> {
             display_resp.append_assistant_text(text);
             display_resp.set_speaking(true);
         })),
-        // Drivetrain commands arrive over the "car.command" topic — the
-        // server's native car.* tools translate every LLM tool call into
+        // Locomotion commands arrive over the "movement.command" topic — the
+        // server's native movement.* tools translate every LLM tool call into
         // a topic-addressed data packet, which the SDK delivers here.
         on_data: Some(Box::new(move |topic: &str, bytes: &[u8]| {
-            if topic != "car.command" {
+            if topic != "movement.command" {
                 return;
             }
-            match parse_car_command(bytes) {
+            match parse_movement_command(bytes) {
                 Some((action, duration_ms, speed)) => {
                     motor_for_data.send(MotorCommand::new(action, duration_ms, speed));
                 }
-                None => warn!("ignoring malformed car.command payload"),
+                None => warn!("ignoring malformed movement.command payload"),
             }
         })),
         on_error: Some(Box::new(|m| warn!("server error: {m}"))),
@@ -514,12 +517,17 @@ fn connect_wifi(
     Ok(wifi)
 }
 
-/// Parse a `car.command` payload coming over the data channel. The server
+/// Parse a `movement.command` payload coming over the data channel. The server
 /// emits JSON `{"action": "...", "duration_ms": ..., "speed_percent": ...}`;
 /// duration / speed are optional and clamped here defensively (the server
 /// already clamps, but a hostile sender should not be able to spin the
 /// wheels for an hour).
-fn parse_car_command(bytes: &[u8]) -> Option<(MotorAction, u32, u8)> {
+///
+/// The payload may also carry `continuous: true`, meaning "keep going until
+/// told to stop". It is ignored here on purpose: a browser character can walk
+/// until it reaches a wall, but a car on a desk cannot, so this falls back to
+/// a normal timed move rather than driving off the edge.
+fn parse_movement_command(bytes: &[u8]) -> Option<(MotorAction, u32, u8)> {
     let v: serde_json::Value = serde_json::from_slice(bytes).ok()?;
     let action = match v.get("action").and_then(|x| x.as_str())? {
         "forward" => MotorAction::Forward,
@@ -534,7 +542,7 @@ fn parse_car_command(bytes: &[u8]) -> Option<(MotorAction, u32, u8)> {
         "fancy" => MotorAction::Fancy,
         "shake" => MotorAction::Shake,
         other => {
-            warn!("unknown car action: {other}");
+            warn!("unknown movement action: {other}");
             return None;
         }
     };

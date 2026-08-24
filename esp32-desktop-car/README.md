@@ -14,9 +14,9 @@ The chassis is a tiny ESP32-S3 desk toy with:
 - BOOT button (push-to-talk) and a capacitive touch pad (mute toggle)
 
 The drivetrain is exposed to the LLM as a set of native Go tools in
-`server/internal/tools/car.go`. When the LLM calls one, the server
+`server/internal/tools/movement.go`. When the LLM calls one, the server
 pipeline emits a topic-addressed data-channel packet
-(`{"type":"data","topic":"car.command","payload":"<base64 JSON>"}`),
+(`{"type":"data","topic":"movement.command","payload":"<base64 JSON>"}`),
 the firmware's `on_data` callback decodes it, and the motor worker
 thread executes the action. No subprocess plugin is involved.
 
@@ -93,24 +93,34 @@ espflash with the right binary path for you.
 Registered as native Go tools in `server/main.go`. Each accepts optional
 `duration_ms` (100–10000) and `speed_percent` (0–100):
 
-| Name                       | What it does                              |
-| -------------------------- | ----------------------------------------- |
-| `car.forward`              | Both wheels forward                       |
-| `car.backward`             | Both wheels backward                      |
-| `car.turn_left`            | Spin in place, counter-clockwise          |
-| `car.turn_right`           | Spin in place, clockwise                  |
-| `car.pivot_forward_left`   | Right wheel only, forward                 |
-| `car.pivot_forward_right`  | Left wheel only, forward                  |
-| `car.pivot_back_left`      | Right wheel only, backward                |
-| `car.pivot_back_right`     | Left wheel only, backward                 |
-| `car.stop`                 | Cut both motors immediately               |
-| `car.dance`                | Choreographed wiggle                      |
-| `car.shake`                | Quick left/right shake                    |
+| Name                           | What it does                     |
+| ------------------------------ | -------------------------------- |
+| `movement.forward`             | Both wheels forward              |
+| `movement.backward`            | Both wheels backward             |
+| `movement.turn_left`           | Spin in place, counter-clockwise |
+| `movement.turn_right`          | Spin in place, clockwise         |
+| `movement.pivot_forward_left`  | Right wheel only, forward        |
+| `movement.pivot_forward_right` | Left wheel only, forward         |
+| `movement.pivot_back_left`     | Right wheel only, backward       |
+| `movement.pivot_back_right`    | Left wheel only, backward        |
+| `movement.stop`                | Cut both motors immediately      |
+| `movement.fancy`               | Choreographed wiggle             |
+| `movement.shake`               | Quick left/right shake           |
 
-The pipeline intercepts every `car.*` call in
-`server/internal/pipeline/pipeline.go` (`handleCarToolCall`) and writes
+The pipeline intercepts every `movement.*` call in
+`server/internal/pipeline/pipeline.go` (`handleMovementToolCall`) and writes
 a single data-channel packet to the device — same pattern as
 `vision.analyze`.
+
+They are named for the action rather than the device. The same tools walk the
+rigged character in [`examples/voice-bot`](../voice-bot), and the server never
+learns which client is connected, so a name like `car.forward` would have that
+client narrating itself as a car. Anything that can go forward and turn can
+subscribe to `movement.command`; this firmware happens to answer with motors.
+
+One field this firmware ignores on purpose: `continuous: true` means "keep
+going until told to stop", which suits a character that stops at a wall and
+does not suit a car on a desk. It falls back to a normal timed move.
 
 ### Device-side
 
@@ -121,7 +131,7 @@ Only one server-callable RPC remains:
 | `get_device_info` | `model`, `wheels`, `sdk` version         |
 
 Motor actions are not exposed via `rpc_register` — they're driven by the
-SDK's `on_data` callback listening on the `car.command` topic.
+SDK's `on_data` callback listening on the `movement.command` topic.
 
 ## Project layout
 
